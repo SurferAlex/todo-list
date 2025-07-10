@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Вход</title>
+	<style>
+		body {
+			text-align: center;
+			font-family: Arial, sans-serif;
+			background-color: #f4f4f4;
+		}
+		h1 {
+			font-size: 2.5em;
+			margin-bottom: 20px;
+		}
+		form {
+			margin: 20px 0;
+		}
+		input[type="text"], input[type="password"] {
+			font-size: 1.2em;
+			padding: 10px;
+			width: 250px;
+			margin: 10px 0;
+		}
+		button {
+			font-size: 1em;
+			padding: 8px 16px;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<h1>Вход</h1>
+	<form method="post">
+		<input type="text" name="username" placeholder="Имя пользователя" required>
+		<input type="password" name="password" placeholder="Пароль" required>
+		<button type="submit">Войти</button>
+	</form>
+</body>
+</html>
