@@ -2,7 +2,6 @@ package auth
 
 import (
 	"encoding/json"
-	"html/template"
 	"net/http"
 	"os"
 )
@@ -58,12 +57,22 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tmpl := template.Must(template.ParseFiles("frontend/templates/register.html"))
-	err := tmpl.Execute(w, nil)
-	if err != nil {
-		http.Error(w, "Ошибка при отображении шаблона регистрации", http.StatusInternalServerError)
-		return
-	}
+	tmpl := `
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<title>Регистрация</title>
+	</head>
+	<body>
+		<h1>Регистрация</h1>
+		<form method="post">
+			<input type="text" name="username" placeholder="Имя пользователя" required>
+			<input type="password" name="password" placeholder="Пароль" required>
+			<button type="submit">Зарегистрироваться</button>
+		</form>
+	</body>
+	</html>`
+	w.Write([]byte(tmpl))
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -84,12 +93,22 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Отображение формы входа
-	tmpl := template.Must(template.ParseFiles("frontend/templates/login.html"))
-	err := tmpl.Execute(w, nil)
-	if err != nil {
-		http.Error(w, "Ошибка при отображении шаблона входа", http.StatusInternalServerError)
-		return
-	}
+	tmpl := `
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Вход</title>
+</head>
+<body>
+	<h1>Вход</h1>
+	<form method="post">
+		<input type="text" name="username" placeholder="Имя пользователя" required>
+		<input type="password" name="password" placeholder="Пароль" required>
+		<button type="submit">Войти</button>
+	</form>
+</body>
+</html>`
+	w.Write([]byte(tmpl))
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
