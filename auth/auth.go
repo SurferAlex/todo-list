@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"html/template"
 	"net/http"
 	"os"
 )
@@ -53,26 +54,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 		users = append(users, User{Username: username, Password: password})
 		saveUsers()
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}
 
-	tmpl := `
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<title>Регистрация</title>
-	</head>
-	<body>
-		<h1>Регистрация</h1>
-		<form method="post">
-			<input type="text" name="username" placeholder="Имя пользователя" required>
-			<input type="password" name="password" placeholder="Пароль" required>
-			<button type="submit">Зарегистрироваться</button>
-		</form>
-	</body>
-	</html>`
-	w.Write([]byte(tmpl))
+	tmpl := template.Must(template.ParseFiles("frontend/templates/register.html"))
+	tmpl.Execute(w, nil)
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -93,30 +80,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Отображение формы входа
-	tmpl := `
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Вход</title>
-</head>
-<body>
-	<h1>Вход</h1>
-	<form method="post">
-		<input type="text" name="username" placeholder="Имя пользователя" required>
-		<input type="password" name="password" placeholder="Пароль" required>
-		<button type="submit">Войти</button>
-	</form>
-</body>
-</html>`
-	w.Write([]byte(tmpl))
+	tmpl := template.Must(template.ParseFiles("frontend/templates/login.html"))
+	tmpl.Execute(w, nil)
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	// Здесь можно добавить логику для завершения сессии, если она есть
-	// Например, удалить куки или сессии, если вы их используете
-
 	// Перенаправление на главную страницу или страницу входа
-	http.Redirect(w, r, "/glav", http.StatusSeeOther)
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
 func init() {

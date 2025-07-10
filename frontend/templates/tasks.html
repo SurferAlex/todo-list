@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Туду Лист</title>
+	<style>
+		body {
+			text-align: center;
+			font-family: Arial, sans-serif;
+			background-color: #f4f4f4;
+		}
+		h1 {
+			font-size: 2.5em;
+			margin-bottom: 20px;
+		}
+		ul {
+			list-style-type: none;
+			padding: 0;
+			margin: 0 auto;
+			width: 50%;
+		}
+		li {
+			margin: 10px 0;
+			font-size: 1.2em;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		label {
+			flex: 1;
+			min-width: 200px;
+			margin: 0;
+		}
+		input[type="text"] {
+			font-size: 1.2em;
+			padding: 10px;
+			width: 250px;
+		}
+		button {
+			font-size: 1em;
+			padding: 8px 16px;
+			cursor: pointer;
+			margin-left: 5px;
+		}
+		.completed {
+			color: green;
+			text-decoration: line-through;
+		}
+		.completed-button {
+			background-color: green;
+			color: white;
+		}
+	</style>
+</head>
+<body>
+	<h1>Список задач</h1>
+	<div style="display: flex; justify-content: flex-end; margin-bottom: 30px; margin-right: 150px;">
+		<a href="/logout" style="font-size: 1.5em; padding: 10px 20px; background-color: #007BFF; color: white; text-decoration: none; border-radius: 5px;">Выйти</a>
+	</div>
+	<ul>
+		{{range $index, $task := .}}
+			<li>
+				<label class="{{if $task.Completed}}completed{{end}}">{{$task.Title}}</label>
+				<form method="post" action="/tasks" style="display:inline;">
+					<input type="hidden" name="index" value="{{$index}}">
+					<button type="submit" class="{{if $task.Completed}}completed-button{{end}}">{{if $task.Completed}}Выполнена{{else}}Невыполнена{{end}}</button>
+				</form>
+				<form method="post" action="/tasks" style="display:inline;">
+					<input type="hidden" name="deleteIndex" value="{{$index}}">
+					<button type="submit">Удалить</button>
+				</form>
+			</li>
+		{{end}}
+	</ul>
+	<form method="post" action="/tasks" style="margin-top: 20px;">
+		<input type="text" name="title" placeholder="Введите название задачи" required>
+		<button type="submit">Добавить задачу</button>
+	</form>
+</body>
+</html>

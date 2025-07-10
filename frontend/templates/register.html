@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Регистрация</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        form {
+            margin: 20px 0;
+        }
+        input[type="text"], input[type="password"] {
+            font-size: 1.2em;
+            padding: 10px;
+            width: 250px;
+            margin: 10px 0;
+        }
+        button {
+            font-size: 1em;
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Регистрация</h1>
+    <form method="post" autocomplete="off">
+        <input type="text" name="new_username" placeholder="Имя пользователя" required autocomplete="off">
+        <input type="password" name="new_password" placeholder="Пароль" required autocomplete="new-password">
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+    <script>
+        window.onload = function() {
+            document.getElementsByName('new_username')[0].value = '';
+            document.getElementsByName('new_password')[0].value = '';
+        };
+    </script>
+</body>
+</html>

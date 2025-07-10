@@ -12,6 +12,6 @@ func main() {
 
 	for {
 		fmt.Println("Сервер запущен. Ожидание запросов...")
-		time.Sleep(1 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
