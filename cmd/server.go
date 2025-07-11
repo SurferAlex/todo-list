@@ -108,7 +108,7 @@ func StartServer() {
 	const filename = "tasks.json"
 	loadTasksFromFile(filename)
 
-	http.HandleFunc("/", mainPageHandler)              // Главная страница
+	http.HandleFunc("/home", mainPageHandler)          // Главная страница
 	http.HandleFunc("/register", auth.RegisterHandler) // Маршрут для регистрации
 	http.HandleFunc("/login", auth.LoginHandler)       // Маршрут для входа
 	http.HandleFunc("/tasks", taskHandler)
