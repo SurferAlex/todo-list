@@ -8,13 +8,11 @@ import (
 	"os"
 	"strconv"
 	"testi/auth"
-	// Добавляем пакет time для работы с датами
 )
 
 type Task struct {
 	Title     string `json:"title"`
 	Completed bool   `json:"completed"`
-	Overdue   bool   `json:"overdue"` // Новое поле для статуса просрочки
 }
 
 var tasks []Task
@@ -98,6 +96,7 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Обработчик главной страницы
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	tmpl := template.Must(template.ParseFiles("frontend/templates/home.html"))
@@ -108,12 +107,15 @@ func StartServer() {
 	const filename = "tasks.json"
 	loadTasksFromFile(filename)
 
+	// Обслуживание файлов для фронта
 	http.Handle("/frontend/", http.StripPrefix("/frontend/", http.FileServer(http.Dir("frontend"))))
+
+	// Ручки и запуск сервера
 	http.HandleFunc("/home", mainPageHandler)          // Главная страница
 	http.HandleFunc("/register", auth.RegisterHandler) // Маршрут для регистрации
 	http.HandleFunc("/login", auth.LoginHandler)       // Маршрут для входа
-	http.HandleFunc("/tasks", taskHandler)
-	http.HandleFunc("/logout", auth.LogoutHandler) // Маршрут для выхода
+	http.HandleFunc("/tasks", taskHandler)             // Маршрут для задач
+	http.HandleFunc("/logout", auth.LogoutHandler)     // Маршрут для выхода
 	fmt.Println("Сервер запущен на :8080")
 	http.ListenAndServe(":8080", nil)
 }
