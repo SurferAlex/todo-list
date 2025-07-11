@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"testi/auth/auth"
+	"testi/auth"
 	// Добавляем пакет time для работы с датами
 )
 
