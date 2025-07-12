@@ -54,7 +54,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 		users = append(users, User{Username: username, Password: password})
 		saveUsers()
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}
 
@@ -86,7 +86,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	// Перенаправление на главную страницу или страницу входа
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
 func init() {
