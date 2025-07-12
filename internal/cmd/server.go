@@ -103,6 +103,11 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+// Обработчик для корневого пути
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/home", http.StatusSeeOther) // Перенаправление на главную страницу
+}
+
 func StartServer() {
 	const filename = "tasks.json"
 	loadTasksFromFile(filename)
@@ -111,7 +116,8 @@ func StartServer() {
 	http.Handle("/frontend/", http.StripPrefix("/frontend/", http.FileServer(http.Dir("frontend"))))
 
 	// Ручки и запуск сервера
-	http.HandleFunc("/", mainPageHandler)              // Главная страница
+	http.HandleFunc("/", rootHandler)                  // Корневой путь
+	http.HandleFunc("/home", mainPageHandler)          // Главная страница
 	http.HandleFunc("/register", auth.RegisterHandler) // Маршрут для регистрации
 	http.HandleFunc("/login", auth.LoginHandler)       // Маршрут для входа
 	http.HandleFunc("/tasks", taskHandler)             // Маршрут для задач
