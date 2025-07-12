@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -32,11 +33,17 @@ func loadUsers() error {
 func saveUsers() error {
 	file, err := os.Create(usersFile)
 	if err != nil {
+		fmt.Println("Ошибка при создании файла:", err)
 		return err
 	}
 	defer file.Close()
 
-	return json.NewEncoder(file).Encode(users)
+	if err := json.NewEncoder(file).Encode(users); err != nil {
+		fmt.Println("Ошибка при записи в файл:", err)
+		return err
+	}
+	fmt.Println("Пользователи успешно сохранены в файл.")
+	return nil
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +60,13 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		users = append(users, User{Username: username, Password: password})
-		saveUsers()
+		// Проверка вызова saveUsers
+		fmt.Println("Сохраняем пользователей...")
+		if err := saveUsers(); err != nil {
+			fmt.Println("Ошибка при сохранении пользователей:", err)
+		} else {
+			fmt.Println("Пользователи успешно сохранены.")
+		}
 		http.Redirect(w, r, "/home", http.StatusSeeOther)
 		return
 	}
