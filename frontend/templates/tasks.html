@@ -1,19 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+	<meta charset="UTF-8">
 	<title>Туду Лист</title>
 	<style>
+		/* стили без изменений */
 		body {
 			text-align: center;
 			font-family: Arial, sans-serif;
 			background-image: url('/frontend/images/background_tasks.jpg');
-			background-size: cover; /* Заставляет изображение занимать весь фон */
-			background-position: top center; /* Центрирует изображение по горизонтали и выравнивает по верхнему краю */
-			background-repeat: no-repeat; /* Отключает повторение изображения */
+			background-size: cover;
+			background-position: top center;
+			background-repeat: no-repeat;
 		}
 		h1 {
 			font-size: 2.5em;
-			margin-bottom: 20px;
+			margin-bottom: 10px;
+			color: white;
+			text-shadow: 0 0 5px #000;
+		}
+		h2#greeting {
+			color: white;
+			text-shadow: 0 0 5px black;
+			margin-bottom: 30px;
 		}
 		ul {
 			list-style-type: none;
@@ -52,31 +61,64 @@
 			background-color: green;
 			color: white;
 		}
+		.logout {
+			font-size: 1.2em;
+			padding: 10px 20px;
+			background-color: #007BFF;
+			color: white;
+			text-decoration: none;
+			border-radius: 5px;
+			margin-bottom: 20px;
+			display: inline-block;
+		}
 	</style>
 </head>
 <body>
-	<h1>Список задач</h1>
-	<div style="display: flex; justify-content: flex-end; margin-bottom: 30px; margin-right: 150px;">
-		<a href="/logout" style="font-size: 1.5em; padding: 10px 20px; background-color: #007BFF; color: white; text-decoration: none; border-radius: 5px;">Выйти</a>
-	</div>
-	<ul>
-		{{range $index, $task := .}}
-			<li>
-				<label class="{{if $task.Completed}}completed{{end}}">{{$task.Title}}</label>
-				<form method="post" action="/tasks" style="display:inline;">
-					<input type="hidden" name="index" value="{{$index}}">
-					<button type="submit" class="{{if $task.Completed}}completed-button{{end}}">{{if $task.Completed}}Выполнена{{else}}Невыполнена{{end}}</button>
-				</form>
-				<form method="post" action="/tasks" style="display:inline;">
-					<input type="hidden" name="deleteIndex" value="{{$index}}">
-					<button type="submit">Удалить</button>
-				</form>
-			</li>
-		{{end}}
-	</ul>
-	<form method="post" action="/tasks" style="margin-top: 20px;">
-		<input type="text" name="title" placeholder="Введите название задачи" required>
-		<button type="submit">Добавить задачу</button>
-	</form>
+<h1>Список задач</h1>
+<h2 id="greeting"></h2>
+
+<div style="margin-bottom: 30px;">
+	<a href="/logout" class="logout">Выйти</a>
+</div>
+
+<ul>
+	{{range $task := .}}
+	<li>
+		<label class="{{if $task.Complete}}completed{{end}}">{{$task.Text}}</label>
+		<form method="post" action="/tasks" style="display:inline;">
+			<input type="hidden" name="toggleId" value="{{$task.ID}}">
+			<button type="submit" class="{{if $task.Complete}}completed-button{{end}}">
+				{{if $task.Complete}}Выполнена{{else}}Невыполнена{{end}}
+			</button>
+		</form>
+		<form method="post" action="/tasks" style="display:inline;">
+			<input type="hidden" name="deleteId" value="{{$task.ID}}">
+			<button type="submit">Удалить</button>
+		</form>
+	</li>
+	{{end}}
+</ul>
+
+<form method="post" action="/tasks" style="margin-top: 20px;">
+	<input type="text" name="title" placeholder="Введите название задачи" required>
+	<button type="submit">Добавить задачу</button>
+</form>
+
+<script>
+	// Получение имени пользователя из куки
+	function getCookie(name) {
+		const value = "; " + document.cookie;
+		const parts = value.split("; " + name + "=");
+		if (parts.length === 2) return parts.pop().split(";").shift();
+	}
+
+	const username = getCookie("username");
+
+	if (username) {
+		document.getElementById("greeting").textContent = `Привет, ${username}!`;
+	} else {
+		window.location.href = "/login";
+	}
+</script>
 </body>
 </html>
