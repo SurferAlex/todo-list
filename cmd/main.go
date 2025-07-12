@@ -2,12 +2,18 @@ package main
 
 import (
 	"fmt"
+
 	"testi/internal/cmd"
+	"testi/internal/repository/tasks"
+
 	"time"
 )
 
 func main() {
-	go cmd.StartServer() // Запускаем сервер в горутине
+
+	repo := tasks.NewRepoTasks() // путь к tasks.json встроен
+	server := cmd.NewServer(repo)
+	server.Start()
 
 	for {
 		fmt.Println("Сервер запущен. Ожидание запросов...")

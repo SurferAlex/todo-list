@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Регистрация</title>
     <style>
         body {
             text-align: center;
             font-family: Arial, sans-serif;
             background-image: url('/frontend/images/background.jpg');
-			background-size: cover; /* Заставляет изображение занимать весь фон */
-			background-position: top center; /* Центрирует изображение по горизонтали и выравнивает по верхнему краю */
-			background-repeat: no-repeat; /* Отключает повторение изображения */
+            background-size: cover;
+            background-position: top center;
+            background-repeat: no-repeat;
         }
         h1 {
             font-size: 2.5em;
@@ -29,20 +30,54 @@
             padding: 8px 16px;
             cursor: pointer;
         }
+        #message {
+            margin-top: 20px;
+            font-size: 1em;
+            color: red;
+        }
     </style>
 </head>
 <body>
-    <h1>Регистрация</h1>
-    <form method="POST" action="/register">
-        <input type="text" name="username" required>
-        <input type="password" name="password" required>
-        <button type="submit">Зарегистрироваться</button>
-    </form>
-    <script>
-        window.onload = function() {
-            document.getElementsByName('new_username')[0].value = '';
-            document.getElementsByName('new_password')[0].value = '';
+<h1>Регистрация</h1>
+<form id="register-form">
+    <input type="text" name="username" placeholder="Логин" required>
+    <input type="password" name="password" placeholder="Пароль" required>
+    <button type="submit">Зарегистрироваться</button>
+</form>
+<div id="message"></div>
+
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
+        e.preventDefault(); // Отключаем перезагрузку страницы
+
+        const formData = new FormData(this);
+        const data = {
+            username: formData.get('username'),
+            password: formData.get('password')
         };
-    </script>
+
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const messageElement = document.getElementById('message');
+
+        if (response.ok) {
+            // 💾 Сохраняем имя пользователя в куки на 1 день
+            document.cookie = `username=${data.username}; path=/; max-age=86400`;
+
+            // ✅ переход на /tasks
+            window.location.href = '/tasks';
+        } else {
+            const errorText = await response.text();
+            messageElement.style.color = 'red';
+            messageElement.textContent = 'Ошибка: ' + errorText;
+        }
+    });
+</script>
 </body>
 </html>
