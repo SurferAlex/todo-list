@@ -127,6 +127,45 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
+func DeleteUser(username string) error {
+	err := loadUsers()
+	if err != nil {
+		return err
+	}
+	newUsers := make([]entity.User, 0, len(users))
+	for _, user := range users {
+		if user.Username != username {
+			newUsers = append(newUsers, user)
+		}
+	}
+	users = newUsers
+	return saveUsers()
+}
+
+func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("username")
+	if err != nil || cookie.Value == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+	username := cookie.Value
+
+	err = DeleteUser(username)
+	if err != nil {
+		http.Error(w, "Ошибка при удалении аккаунта", http.StatusInternalServerError)
+		return
+	}
+
+	// Удаляем куку и редиректим на главную
+	http.SetCookie(w, &http.Cookie{
+		Name:   "username",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func init() {
 	loadUsers()
 }
