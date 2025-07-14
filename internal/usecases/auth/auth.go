@@ -55,28 +55,25 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Проверка логина и пароля
+	// Проверка на существование пользователя
 	for _, user := range users {
-		if user.Username == creds.Username && user.Password == creds.Password {
-			// Успешный вход
-			w.WriteHeader(http.StatusOK)
+		if user.Username == creds.Username {
+			http.Error(w, "Пользователь уже существует", http.StatusConflict)
 			return
 		}
-
-		users = append(users, entity.User{Username: creds.Username, Password: creds.Password})
-		// Проверка вызова saveUsers
-		fmt.Println("Сохраняем пользователей...")
-		if err := saveUsers(); err != nil {
-			fmt.Println("Ошибка при сохранении пользователей:", err)
-		} else {
-			fmt.Println("Пользователи успешно сохранены.")
-		}
-		http.Redirect(w, r, "/home", http.StatusSeeOther)
-		return
-
-		tmpl := template.Must(template.ParseFiles("frontend/templates/register.html"))
-		tmpl.Execute(w, nil)
 	}
+
+	// Добавление нового пользователя
+	users = append(users, entity.User{Username: creds.Username, Password: creds.Password})
+
+	// Сохранение пользователей
+	if err := saveUsers(); err != nil {
+		fmt.Println("Ошибка при сохранении пользователей:", err)
+		http.Error(w, "Ошибка при сохранении пользователя", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +129,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// Перенаправление на логин или главную
-	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func init() {
