@@ -1,42 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+	<meta charset="UTF-8">
 	<title>Вход</title>
 	<style>
 		body {
 			text-align: center;
 			font-family: Arial, sans-serif;
 			background-image: url('/frontend/images/background.jpg');
-			background-size: cover; /* Заставляет изображение занимать весь фон */
-			background-position: top center; /* Центрирует изображение по горизонтали и выравнивает по верхнему краю */
-			background-repeat: no-repeat; /* Отключает повторение изображения */
+			background-size: cover;
+			background-position: top center;
+			background-repeat: no-repeat;
 		}
+
 		h1 {
 			font-size: 2.5em;
 			margin-bottom: 20px;
+			color: white;
+			text-shadow: 0 0 5px #000;
 		}
+
 		form {
-			margin: 20px 0;
+			margin: 20px auto;
+			padding: 20px;
+			width: 300px;
+			background: rgba(255, 255, 255, 0.9);
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0,0,0,0.3);
 		}
+
 		input[type="text"], input[type="password"] {
 			font-size: 1.2em;
 			padding: 10px;
-			width: 250px;
+			width: 90%;
 			margin: 10px 0;
+			border: 1px solid #ccc;
+			border-radius: 5px;
 		}
+
 		button {
 			font-size: 1em;
-			padding: 8px 16px;
+			padding: 10px 20px;
 			cursor: pointer;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			border-radius: 5px;
+		}
+
+		#error {
+			margin-top: 15px;
+			color: red;
+			font-weight: bold;
 		}
 	</style>
 </head>
 <body>
-	<h1>Вход</h1>
-	<form method="post">
-		<input type="text" name="username" placeholder="Имя пользователя" required>
-		<input type="password" name="password" placeholder="Пароль" required>
-		<button type="submit">Войти</button>
-	</form>
+<h1>Вход</h1>
+<form id="login-form">
+	<input type="text" name="username" placeholder="Имя пользователя" required>
+	<input type="password" name="password" placeholder="Пароль" required>
+	<button type="submit">Войти</button>
+</form>
+<div id="error"></div>
+
+<script>
+	document.getElementById('login-form').addEventListener('submit', async function (e) {
+		e.preventDefault(); // отключаем стандартную отправку формы
+
+		const formData = new FormData(this);
+		const data = {
+			username: formData.get('username'),
+			password: formData.get('password')
+		};
+
+		const response = await fetch('/login', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data)
+		});
+
+		const errorDiv = document.getElementById('error');
+
+		if (response.ok) {
+			// Сохраняем имя пользователя в куки на 1 день
+			document.cookie = `username=${data.username}; path=/; max-age=86400`;
+
+			// Перенаправление на /tasks
+			window.location.href = '/tasks';
+		} else {
+			const errorText = await response.text();
+			errorDiv.textContent = 'Ошибка: ' + errorText;
+		}
+	});
+</script>
 </body>
 </html>

@@ -1,127 +1,109 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
-	"os"
-	"strconv"
-	"testi/auth"
+
+	"testi/internal/api/router"
+	"testi/internal/entity"
+	"testi/internal/repository/tasks"
+	"testi/internal/usecases/auth"
 )
 
-type Task struct {
-	Title     string `json:"title"`
-	Completed bool   `json:"completed"`
+type Server struct {
+	repo *tasks.Repository
 }
 
-var tasks []Task
-
-// Функция для сохранения задач в файл
-func saveTasksToFile(filename string) {
-	data, err := json.MarshalIndent(tasks, "", "  ")
-	if err != nil {
-		fmt.Println("Ошибка при сохранении файла:", err)
-		return
-	}
-	err = os.WriteFile(filename, data, 0644)
-	if err != nil {
-		fmt.Println("Ошибка при записи файла:", err)
-	}
+func NewServer(repo *tasks.Repository) *Server {
+	return &Server{repo: repo}
 }
 
-// Функция для загрузки задач из файла
-func loadTasksFromFile(filename string) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return // файла нет — просто начинаем с пустого списка
-		}
-		fmt.Println("Ошибка при чтении файла:", err)
-		return
-	}
-	err = json.Unmarshal(data, &tasks)
-	if err != nil {
-		fmt.Println("Ошибка при разборе задач:", err)
-		return
-	}
+func (s *Server) Start() {
+	// Обслуживание статики
+	http.Handle("/frontend/", http.StripPrefix("/frontend/", http.FileServer(http.Dir("frontend"))))
 
+	// Роуты
+	router.Handle("GET", "/", s.handleRoot)
+	router.Handle("GET", "/home", s.handleHome)
+	router.Handle("GET", "/tasks", s.handleGetTasks)
+	router.Handle("POST", "/tasks", s.handlePostTasks)
+	router.Handle("GET", "/login", auth.LoginHandler)
+	router.Handle("POST", "/login", auth.CheckPassword)
+	router.Handle("GET", "/register", auth.RegisterHandler)
+	router.Handle("POST", "/register", auth.Register)
+	router.Handle("GET", "/logout", auth.LogoutHandler)
+
+	// Старт сервера
+	http.HandleFunc("/", router.ServeHTTP)
+	fmt.Println("Сервер запущен на :8080")
+	http.ListenAndServe(":8080", nil)
 }
 
-// Обработчик для отображения новых задач и добавления новых задач
-func taskHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodPost:
-		r.ParseForm()
-		if title := r.FormValue("title"); title != "" {
-			// Обработка добавления новой задачи
-			tasks = append(tasks, Task{Title: title, Completed: false}) // Обновляем добавление задачи
-			saveTasksToFile("tasks.json")
-			http.Redirect(w, r, "/tasks", http.StatusSeeOther) // Перенаправление на страницу задач
-			return
-		} else if index := r.FormValue("index"); index != "" {
-			// Обработка изменения статуса задачи
-			if idx, err := strconv.Atoi(index); err == nil && idx >= 0 && idx < len(tasks) {
-				tasks[idx].Completed = !tasks[idx].Completed
-				saveTasksToFile("tasks.json")
-				http.Redirect(w, r, "/tasks", http.StatusSeeOther) // Перенаправление на страницу задач
-				return
-			}
-		} else if deleteIndex := r.FormValue("deleteIndex"); deleteIndex != "" {
-			// Обработка удаления задачи
-			if idx, err := strconv.Atoi(deleteIndex); err == nil && idx >= 0 && idx < len(tasks) {
-				tasks = append(tasks[:idx], tasks[idx+1:]...) // Удаляем задачу
-				saveTasksToFile("tasks.json")
-				http.Redirect(w, r, "/tasks", http.StatusSeeOther) // Перенаправление на страницу задач
-				return
-			}
-		}
-	}
-
-	// Загружаем шаблон
-	tmpl := template.New("tasks.html")
-	tmpl, err := tmpl.ParseFiles("frontend/templates/tasks.html")
-	if err != nil {
-		fmt.Println("Ошибка при парсинге шаблона:", err)
-		http.Error(w, "Ошибка при парсинге шаблона", http.StatusInternalServerError)
-		return
-	}
-
-	// Выполняем шаблон
-	err = tmpl.Execute(w, tasks)
-	if err != nil {
-		fmt.Println("Ошибка при отображении задач:", err)
-		http.Error(w, "Ошибка при отображении задач", http.StatusInternalServerError)
-		return
-	}
+func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
-// Обработчик главной страницы
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-
+func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("frontend/templates/home.html"))
 	tmpl.Execute(w, nil)
 }
 
-// Обработчик для корневого пути
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/home", http.StatusSeeOther) // Перенаправление на главную страницу
+func (s *Server) handleGetTasks(w http.ResponseWriter, r *http.Request) {
+	username, err := s.getUsernameFromCookie(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	tasksList, err := s.repo.GetTasksByUser(username)
+	if err != nil {
+		http.Error(w, "Ошибка загрузки задач", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl := template.Must(template.ParseFiles("frontend/templates/tasks.html"))
+	tmpl.Execute(w, tasksList)
 }
 
-func StartServer() {
-	const filename = "tasks.json"
-	loadTasksFromFile(filename)
+func (s *Server) handlePostTasks(w http.ResponseWriter, r *http.Request) {
+	username, err := s.getUsernameFromCookie(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
-	// Обслуживание файлов для фронта
-	http.Handle("/frontend/", http.StripPrefix("/frontend/", http.FileServer(http.Dir("frontend"))))
+	user := entity.User{Username: username}
+	r.ParseForm()
 
-	// Ручки и запуск сервера
-	http.HandleFunc("/", rootHandler)                  // Корневой путь
-	http.HandleFunc("/home", mainPageHandler)          // Главная страница
-	http.HandleFunc("/register", auth.RegisterHandler) // Маршрут для регистрации
-	http.HandleFunc("/login", auth.LoginHandler)       // Маршрут для входа
-	http.HandleFunc("/tasks", taskHandler)             // Маршрут для задач
-	http.HandleFunc("/logout", auth.LogoutHandler)     // Маршрут для выхода
-	fmt.Println("Сервер запущен на :8080")
-	http.ListenAndServe(":8080", nil)
+	switch {
+	case r.FormValue("title") != "":
+		// Добавление новой задачи
+		if err := s.repo.CreateTask(user, r.FormValue("title")); err != nil {
+			http.Error(w, "Не удалось сохранить задачу", http.StatusInternalServerError)
+			return
+		}
+	case r.FormValue("toggleId") != "":
+		// Переключение статуса задачи
+		if err := s.repo.ToggleCompleteByID(username, r.FormValue("toggleId")); err != nil {
+			http.Error(w, "Ошибка переключения статуса", http.StatusInternalServerError)
+			return
+		}
+	case r.FormValue("deleteId") != "":
+		// Удаление задачи
+		if err := s.repo.DeleteTaskByID(username, r.FormValue("deleteId")); err != nil {
+			http.Error(w, "Ошибка удаления задачи", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	http.Redirect(w, r, "/tasks", http.StatusSeeOther)
+}
+
+func (s *Server) getUsernameFromCookie(r *http.Request) (string, error) {
+	cookie, err := r.Cookie("username")
+	if err != nil || cookie.Value == "" {
+		return "", fmt.Errorf("cookie not found")
+	}
+	return cookie.Value, nil
 }
