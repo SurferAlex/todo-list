@@ -59,6 +59,7 @@ func SetupRouters(repo *tasks.Repository) {
 	Handle("GET", "/register", auth.RegisterHandler)
 	Handle("POST", "/register", auth.Register)
 	Handle("GET", "/logout", auth.LogoutHandler)
+	Handle("POST", "/delete_account", auth.DeleteAccountHandler)
 
 }
 

@@ -41,6 +41,7 @@
 			flex: 1;
 			min-width: 200px;
 			margin: 0;
+			margin-right: 8px; /* уменьшили отступ справа */
 		}
 		input[type="text"] {
 			font-size: 1.2em;
@@ -79,6 +80,9 @@
 
 <div style="margin-bottom: 30px;">
 	<a href="/logout" class="logout">Выйти</a>
+	<form method="post" action="/delete_account" style="display:inline;">
+		<button type="submit" class="logout" style="background-color: #dc3545; margin-left: 10px;">Удалить аккаунт</button>
+	</form>
 </div>
 
 <ul>
