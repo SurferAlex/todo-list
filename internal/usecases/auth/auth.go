@@ -105,11 +105,6 @@ func CheckPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Error(w, "Неверные данные", http.StatusUnauthorized)
-	return
-
-	// Отображение формы входа
-	tmpl := template.Must(template.ParseFiles("frontend/templates/login.html"))
-	tmpl.Execute(w, nil)
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
