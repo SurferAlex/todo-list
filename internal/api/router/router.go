@@ -36,6 +36,12 @@ type Router struct{}
 
 // ServeHTTP реализует интерфейс http.Handler
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	// Обработка статики
+	if strings.HasPrefix(req.URL.Path, "/frontend/") {
+		http.StripPrefix("/frontend/", http.FileServer(http.Dir("frontend"))).ServeHTTP(w, req)
+		return
+	}
+	// Ваши маршруты
 	if handler, ok := routes[routeKey{Method: req.Method, Path: req.URL.Path}]; ok {
 		handler(w, req)
 	} else {
@@ -53,6 +59,7 @@ func SetupRouters(repo *tasks.Repository) {
 	Handle("GET", "/register", auth.RegisterHandler)
 	Handle("POST", "/register", auth.Register)
 	Handle("GET", "/logout", auth.LogoutHandler)
+
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {

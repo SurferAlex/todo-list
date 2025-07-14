@@ -16,13 +16,11 @@ func NewServer(repo *tasks.Repository) *Server {
 }
 
 func (s *Server) Start() {
-	// Обслуживание статики
-	http.Handle("/frontend/", http.StripPrefix("/frontend/", http.FileServer(http.Dir("frontend"))))
 
 	// Настройка маршрутов
 	router.SetupRouters(s.repo)
 
 	// Старт сервера
 	fmt.Println("Сервер запущен на :8080")
-	http.ListenAndServe(":8080", &router.Router{}) // Используйте структуру Router
+	http.ListenAndServe(":8080", &router.Router{})
 }
