@@ -2,47 +2,14 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"net/http"
-	"os"
 	"time"
 
 	"testi/internal/entity"
+	"testi/internal/repository/db" // Импортируем пакет db
 )
 
-var users []entity.User
-
-const usersFile = "users.json"
-
-func loadUsers() error {
-	file, err := os.Open(usersFile)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return err
-	}
-	defer file.Close()
-
-	return json.NewDecoder(file).Decode(&users)
-}
-
-func saveUsers() error {
-	file, err := os.Create(usersFile)
-	if err != nil {
-		fmt.Println("Ошибка при создании файла:", err)
-		return err
-	}
-	defer file.Close()
-
-	if err := json.NewEncoder(file).Encode(users); err != nil {
-		fmt.Println("Ошибка при записи в файл:", err)
-		return err
-	}
-	fmt.Println("Пользователи успешно сохранены в файл.")
-	return nil
-}
 func Register(w http.ResponseWriter, r *http.Request) {
 	var creds struct {
 		Username string `json:"username"`
@@ -56,19 +23,15 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверка на существование пользователя
-	for _, user := range users {
-		if user.Username == creds.Username {
-			http.Error(w, "Пользователь уже существует", http.StatusConflict)
-			return
-		}
+	existingUser, err := db.GetUserByUsername(creds.Username) // Функция для получения пользователя по имени
+	if err == nil && existingUser != nil {
+		http.Error(w, "Пользователь уже существует", http.StatusConflict)
+		return
 	}
 
-	// Добавление нового пользователя
-	users = append(users, entity.User{Username: creds.Username, Password: creds.Password})
-
-	// Сохранение пользователей
-	if err := saveUsers(); err != nil {
-		fmt.Println("Ошибка при сохранении пользователей:", err)
+	// Добавление нового пользователя в базу данных
+	newUser := entity.User{Username: creds.Username, Password: creds.Password}
+	if err := db.InsertUser(newUser); err != nil {
 		http.Error(w, "Ошибка при сохранении пользователя", http.StatusInternalServerError)
 		return
 	}
@@ -77,10 +40,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-
 	tmpl := template.Must(template.ParseFiles("frontend/templates/register.html"))
 	tmpl.Execute(w, nil)
-
 }
 
 func CheckPassword(w http.ResponseWriter, r *http.Request) {
@@ -96,15 +57,14 @@ func CheckPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверка логина и пароля
-	for _, user := range users {
-		if user.Username == creds.Username && user.Password == creds.Password {
-			// Успешный вход
-			w.WriteHeader(http.StatusOK)
-			return
-		}
+	user, err := db.GetUserByUsername(creds.Username) // Получаем пользователя из базы данных
+	if err != nil || user == nil || user.Password != creds.Password {
+		http.Error(w, "Неверные данные", http.StatusUnauthorized)
+		return
 	}
 
-	http.Error(w, "Неверные данные", http.StatusUnauthorized)
+	// Успешный вход
+	w.WriteHeader(http.StatusOK)
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -127,21 +87,6 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-func DeleteUser(username string) error {
-	err := loadUsers()
-	if err != nil {
-		return err
-	}
-	newUsers := make([]entity.User, 0, len(users))
-	for _, user := range users {
-		if user.Username != username {
-			newUsers = append(newUsers, user)
-		}
-	}
-	users = newUsers
-	return saveUsers()
-}
-
 func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("username")
 	if err != nil || cookie.Value == "" {
@@ -150,7 +95,7 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	username := cookie.Value
 
-	err = DeleteUser(username)
+	err = db.DeleteUser(username) // Удаляем пользователя из базы данных
 	if err != nil {
 		http.Error(w, "Ошибка при удалении аккаунта", http.StatusInternalServerError)
 		return
@@ -164,8 +109,4 @@ func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
 		MaxAge: -1,
 	})
 	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-func init() {
-	loadUsers()
 }
