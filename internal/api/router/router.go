@@ -1,12 +1,14 @@
 package router
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 	"strings"
 	"testi/internal/entity"
-	"testi/internal/repository/tasks"
+	"testi/internal/repository/db"
 	"testi/internal/usecases/auth"
 )
 
@@ -49,18 +51,17 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func SetupRouters(repo *tasks.Repository) {
+func SetupRouters() {
 	Handle("GET", "/", handleRoot)
 	Handle("GET", "/home", handleHome)
-	Handle("GET", "/tasks", handleGetTasks(repo))
-	Handle("POST", "/tasks", handlePostTasks(repo))
+	Handle("GET", "/tasks", handleGetTasks)
+	Handle("POST", "/tasks", handlePostTasks)
 	Handle("GET", "/login", auth.LoginHandler)
 	Handle("POST", "/login", auth.CheckPassword)
 	Handle("GET", "/register", auth.RegisterHandler)
 	Handle("POST", "/register", auth.Register)
 	Handle("GET", "/logout", auth.LogoutHandler)
 	Handle("POST", "/delete_account", auth.DeleteAccountHandler)
-
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
@@ -72,56 +73,53 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
-func handleGetTasks(repo *tasks.Repository) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		username, err := getUsernameFromCookie(r)
-		if err != nil {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
-		}
-
-		tasksList, err := repo.GetTasksByUser(username)
-		if err != nil {
-			http.Error(w, "Ошибка загрузки задач", http.StatusInternalServerError)
-			return
-		}
-
-		tmpl := template.Must(template.ParseFiles("frontend/templates/tasks.html"))
-		tmpl.Execute(w, tasksList)
+func handleGetTasks(w http.ResponseWriter, r *http.Request) {
+	username, err := getUsernameFromCookie(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
 	}
+
+	tasksList, err := db.GetTasksByUser(username)
+	if err != nil {
+		http.Error(w, "Ошибка загрузки задач", http.StatusInternalServerError)
+		return
+	}
+
+	tmpl := template.Must(template.ParseFiles("frontend/templates/tasks.html"))
+	tmpl.Execute(w, tasksList)
 }
 
-func handlePostTasks(repo *tasks.Repository) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		username, err := getUsernameFromCookie(r)
-		if err != nil {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+func handlePostTasks(w http.ResponseWriter, r *http.Request) {
+	username, err := getUsernameFromCookie(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	user := entity.User{Username: username}
+	r.ParseForm()
+
+	switch {
+	case r.FormValue("title") != "":
+		task := entity.Task{Username: user.Username, Title: r.FormValue("title")}
+		if err := db.InsertTask(task); err != nil {
+			http.Error(w, "Не удалось сохранить задачу", http.StatusInternalServerError)
 			return
 		}
-
-		user := entity.User{Username: username}
-		r.ParseForm()
-
-		switch {
-		case r.FormValue("title") != "":
-			if err := repo.CreateTask(user, r.FormValue("title")); err != nil {
-				http.Error(w, "Не удалось сохранить задачу", http.StatusInternalServerError)
-				return
-			}
-		case r.FormValue("toggleId") != "":
-			if err := repo.ToggleCompleteByID(username, r.FormValue("toggleId")); err != nil {
-				http.Error(w, "Ошибка переключения статуса", http.StatusInternalServerError)
-				return
-			}
-		case r.FormValue("deleteId") != "":
-			if err := repo.DeleteTaskByID(username, r.FormValue("deleteId")); err != nil {
-				http.Error(w, "Ошибка удаления задачи", http.StatusInternalServerError)
-				return
-			}
+	case r.FormValue("toggleId") != "":
+		id, err := strconv.Atoi(r.FormValue("toggleId"))
+		if err == nil {
+			db.ToggleCompleteByID(username, id)
 		}
-
-		http.Redirect(w, r, "/tasks", http.StatusSeeOther)
+	case r.FormValue("deleteId") != "":
+		id, err := strconv.Atoi(r.FormValue("deleteId"))
+		if err == nil {
+			db.DeleteTaskByID(username, id)
+		}
 	}
+
+	http.Redirect(w, r, "/tasks", http.StatusSeeOther)
 }
 
 func getUsernameFromCookie(r *http.Request) (string, error) {
@@ -130,4 +128,43 @@ func getUsernameFromCookie(r *http.Request) (string, error) {
 		return "", fmt.Errorf("cookie not found")
 	}
 	return cookie.Value, nil
+}
+
+func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
+	// Например, имя пользователя берём из query-параметра (?username=...)
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		http.Error(w, "username is required", http.StatusBadRequest)
+		return
+	}
+
+	tasks, err := db.GetTasksByUser(username)
+	if err != nil {
+		http.Error(w, "failed to get tasks", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(tasks)
+}
+
+func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
+	var task entity.Task
+	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if task.Username == "" || task.Title == "" {
+		http.Error(w, "username and title are required", http.StatusBadRequest)
+		return
+	}
+
+	err := db.InsertTask(task)
+	if err != nil {
+		http.Error(w, "failed to create task", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
