@@ -88,7 +88,7 @@
 <ul>
 	{{range $task := .}}
 	<li>
-		<label class="{{if $task.Complete}}completed{{end}}">{{$task.Text}}</label>
+		<label class="{{if $task.Complete}}completed{{end}}">{{$task.Title}}</label>
 		<form method="post" action="/tasks" style="display:inline;">
 			<input type="hidden" name="toggleId" value="{{$task.ID}}">
 			<button type="submit" class="{{if $task.Complete}}completed-button{{end}}">

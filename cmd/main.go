@@ -2,20 +2,22 @@ package main
 
 import (
 	"fmt"
-
 	"testi/internal/cmd"
 	"testi/internal/repository/db"
-	"testi/internal/repository/tasks"
-
 	"time"
 )
 
 func main() {
 	// Инициализация подключения к базе данных
-	db.InitDB("user=postgres password=Luc1an1998& dbname=user_db host=localhost port=5432 sslmode=disable") // Замените на ваши параметры подключения
+	db.InitDB(
+		`user=postgres password=qwe1144EodT5
+		dbname=auth_db
+		host=localhost
+		port=5432
+		sslmode=disable`,
+	)
 
-	repo := tasks.NewRepoTasks() // путь к tasks.json встроен
-	server := cmd.NewServer(repo)
+	server := cmd.NewServer()
 	server.Start()
 
 	for {

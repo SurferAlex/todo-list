@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
-	"time"
-
 	"testi/internal/entity"
-	"testi/internal/repository/db" // Импортируем пакет db
+	"testi/internal/repository/db" //
+	"time"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {

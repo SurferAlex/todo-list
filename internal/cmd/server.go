@@ -4,21 +4,18 @@ import (
 	"fmt"
 	"net/http"
 	"testi/internal/api/router"
-	"testi/internal/repository/tasks"
 )
 
-type Server struct {
-	repo *tasks.Repository
-}
+type Server struct{}
 
-func NewServer(repo *tasks.Repository) *Server {
-	return &Server{repo: repo}
+// NewServer теперь не принимает аргументов
+func NewServer() *Server {
+	return &Server{}
 }
 
 func (s *Server) Start() {
-
 	// Настройка маршрутов
-	router.SetupRouters(s.repo)
+	router.SetupRouters()
 
 	// Старт сервера
 	fmt.Println("Сервер запущен на :8080")
