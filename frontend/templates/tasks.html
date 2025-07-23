@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
 	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Туду Лист</title>
 	<style>
-		/* стили без изменений */
 		body {
 			text-align: center;
 			font-family: Arial, sans-serif;
@@ -12,117 +12,328 @@
 			background-size: cover;
 			background-position: top center;
 			background-repeat: no-repeat;
+			margin: 0;
+			padding: 20px;
 		}
+		
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			background: rgba(255, 255, 255, 0.7);
+			border-radius: 20px;
+			padding: 30px;
+			box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+			backdrop-filter: blur(15px);
+			border: 1px solid rgba(255, 255, 255, 0.3);
+		}
+		
 		h1 {
 			font-size: 2.5em;
 			margin-bottom: 10px;
-			color: white;
-			text-shadow: 0 0 5px #000;
+			color: #333;
 		}
+		
 		h2#greeting {
-			color: white;
-			text-shadow: 0 0 5px black;
+			color: #666;
 			margin-bottom: 30px;
+			font-size: 1.3em;
 		}
+		
+		.navigation {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+			margin-bottom: 30px;
+			flex-wrap: wrap;
+		}
+		
+		.nav-button {
+			font-size: 1.1em;
+			padding: 12px 24px;
+			color: white;
+			text-decoration: none;
+			border-radius: 12px;
+			display: inline-block;
+			transition: all 0.3s ease;
+			border: none;
+			cursor: pointer;
+			font-weight: 500;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+			backdrop-filter: blur(10px);
+		}
+		
+		.nav-button:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+		}
+		
+		.profile-btn {
+			background: rgba(40, 167, 69, 0.8);
+		}
+		
+		.wall-btn {
+			background: rgba(255, 193, 7, 0.8);
+			color: #333;
+		}
+		
+		.logout-btn {
+			background: rgba(0, 123, 255, 0.8);
+		}
+		
+		.delete-btn {
+			background: rgba(220, 53, 69, 0.8);
+		}
+		
 		ul {
 			list-style-type: none;
 			padding: 0;
 			margin: 0 auto;
-			width: 50%;
+			width: 100%;
+			max-width: 600px;
 		}
+		
 		li {
-			margin: 10px 0;
+			margin: 15px 0;
 			font-size: 1.2em;
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			background: rgba(255, 255, 255, 0.8);
+			padding: 15px;
+			border-radius: 10px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			transition: transform 0.2s ease;
+			backdrop-filter: blur(10px);
 		}
+		
+		li:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+		}
+		
 		label {
 			flex: 1;
 			min-width: 200px;
 			margin: 0;
-			margin-right: 8px; /* уменьшили отступ справа */
+			margin-right: 15px;
+			font-weight: 500;
 		}
+		
 		input[type="text"] {
 			font-size: 1.2em;
-			padding: 10px;
-			width: 250px;
+			padding: 12px 16px;
+			width: 300px;
+			border: 2px solid rgba(224, 224, 224, 0.5);
+			border-radius: 8px;
+			transition: border-color 0.3s ease;
+			background: rgba(255, 255, 255, 0.8);
+			backdrop-filter: blur(10px);
 		}
+		
+		input[type="text"]:focus {
+			outline: none;
+			border-color: #007BFF;
+			box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+			background: rgba(255, 255, 255, 0.9);
+		}
+		
 		button {
 			font-size: 1em;
-			padding: 8px 16px;
-			cursor: pointer;
-			margin-left: 5px;
-		}
-		.completed {
-			color: green;
-			text-decoration: line-through;
-		}
-		.completed-button {
-			background-color: green;
-			color: white;
-		}
-		.logout {
-			font-size: 1.2em;
 			padding: 10px 20px;
-			background-color: #007BFF;
+			cursor: pointer;
+			margin-left: 8px;
+			border: none;
+			border-radius: 6px;
+			transition: all 0.3s ease;
+			font-weight: 500;
+			backdrop-filter: blur(10px);
+		}
+		
+		button:hover {
+			transform: translateY(-1px);
+		}
+		
+		.completed {
+			color: #28a745;
+			text-decoration: line-through;
+			opacity: 0.7;
+		}
+		
+		.completed-button {
+			background: rgba(40, 167, 69, 0.8);
 			color: white;
-			text-decoration: none;
-			border-radius: 5px;
-			margin-bottom: 20px;
-			display: inline-block;
+		}
+		
+		.task-button {
+			background: rgba(108, 117, 125, 0.8);
+			color: white;
+		}
+		
+		.delete-task-btn {
+			background: rgba(220, 53, 69, 0.8);
+			color: white;
+		}
+		
+		.add-form {
+			margin-top: 30px;
+			padding: 20px;
+			background: rgba(255, 255, 255, 0.6);
+			border-radius: 10px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			backdrop-filter: blur(10px);
+		}
+		
+		.add-button {
+			background: rgba(0, 123, 255, 0.8);
+			color: white;
+			font-size: 1.1em;
+			padding: 12px 24px;
+		}
+		
+		/* Планшеты */
+		@media (max-width: 768px) {
+			body {
+				padding: 15px;
+			}
+			
+			.container {
+				padding: 25px;
+			}
+			
+			h1 {
+				font-size: 2em;
+			}
+			
+			.navigation {
+				flex-direction: column;
+				gap: 10px;
+			}
+			
+			.nav-button {
+				width: 100%;
+				text-align: center;
+			}
+			
+			li {
+				flex-direction: column;
+				gap: 10px;
+				align-items: stretch;
+			}
+			
+			label {
+				margin-right: 0;
+				margin-bottom: 10px;
+			}
+			
+			input[type="text"] {
+				width: 100%;
+				box-sizing: border-box;
+			}
+			
+			button {
+				margin-left: 0;
+				margin-top: 5px;
+				width: 100%;
+			}
+		}
+		
+		/* Мобильные */
+		@media (max-width: 480px) {
+			body {
+				padding: 10px;
+			}
+			
+			.container {
+				padding: 20px;
+			}
+			
+			h1 {
+				font-size: 1.8em;
+			}
+			
+			.nav-button {
+				padding: 15px 20px;
+				font-size: 16px;
+				min-height: 44px;
+			}
+			
+			li {
+				padding: 12px;
+			}
+			
+			input[type="text"] {
+				font-size: 16px;
+				padding: 12px;
+			}
+			
+			button {
+				padding: 12px 16px;
+				font-size: 14px;
+				min-height: 44px;
+			}
+			
+			.add-form {
+				padding: 15px;
+			}
 		}
 	</style>
 </head>
 <body>
-<h1>Список задач</h1>
-<h2 id="greeting"></h2>
+	<div class="container">
+		<h1>Список задач</h1>
+		<h2 id="greeting"></h2>
 
-<div style="margin-bottom: 30px;">
-	<a href="/logout" class="logout">Выйти</a>
-	<form method="post" action="/delete_account" style="display:inline;">
-		<button type="submit" class="logout" style="background-color: #dc3545; margin-left: 10px;">Удалить аккаунт</button>
-	</form>
-</div>
+		<div class="navigation">
+			<a href="/profile" class="nav-button profile-btn">Профиль</a>
+			<a href="/wall" class="nav-button wall-btn">Стена</a>
+			<a href="/logout" class="nav-button logout-btn">Выйти</a>
+			<form method="post" action="/delete_account" style="display:inline;">
+				<button type="submit" class="nav-button delete-btn">Удалить аккаунт</button>
+			</form>
+		</div>
 
-<ul>
-	{{range $task := .}}
-	<li>
-		<label class="{{if $task.Complete}}completed{{end}}">{{$task.Title}}</label>
-		<form method="post" action="/tasks" style="display:inline;">
-			<input type="hidden" name="toggleId" value="{{$task.ID}}">
-			<button type="submit" class="{{if $task.Complete}}completed-button{{end}}">
-				{{if $task.Complete}}Выполнена{{else}}Невыполнена{{end}}
-			</button>
-		</form>
-		<form method="post" action="/tasks" style="display:inline;">
-			<input type="hidden" name="deleteId" value="{{$task.ID}}">
-			<button type="submit">Удалить</button>
-		</form>
-	</li>
-	{{end}}
-</ul>
+		<ul>
+			{{range $task := .}}
+			<li>
+				<label class="{{if $task.Complete}}completed{{end}}">{{$task.Title}}</label>
+				<form method="post" action="/tasks" style="display:inline;">
+					<input type="hidden" name="toggleId" value="{{$task.ID}}">
+					<button type="submit" class="{{if $task.Complete}}completed-button{{else}}task-button{{end}}">
+						{{if $task.Complete}}Выполнена{{else}}Невыполнена{{end}}
+					</button>
+				</form>
+				<form method="post" action="/tasks" style="display:inline;">
+					<input type="hidden" name="deleteId" value="{{$task.ID}}">
+					<button type="submit" class="delete-task-btn">Удалить</button>
+				</form>
+			</li>
+			{{end}}
+		</ul>
 
-<form method="post" action="/tasks" style="margin-top: 20px;">
-	<input type="text" name="title" placeholder="Введите название задачи" required>
-	<button type="submit">Добавить задачу</button>
-</form>
+		<div class="add-form">
+			<form method="post" action="/tasks">
+				<input type="text" name="title" placeholder="Введите название задачи" required>
+				<button type="submit" class="add-button">Добавить задачу</button>
+			</form>
+		</div>
+	</div>
 
-<script>
-	// Получение имени пользователя из куки
-	function getCookie(name) {
-		const value = "; " + document.cookie;
-		const parts = value.split("; " + name + "=");
-		if (parts.length === 2) return parts.pop().split(";").shift();
-	}
+	<script>
+		function getCookie(name) {
+			const value = "; " + document.cookie;
+			const parts = value.split("; " + name + "=");
+			if (parts.length === 2) return parts.pop().split(";").shift();
+		}
 
-	const username = getCookie("username");
+		const username = getCookie("username");
 
-	if (username) {
-		document.getElementById("greeting").textContent = `Привет, ${username}!`;
-	} else {
-		window.location.href = "/login";
-	}
-</script>
+		if (username) {
+			document.getElementById("greeting").textContent = `Привет, ${username}!`;
+		} else {
+			window.location.href = "/login";
+		}
+	</script>
 </body>
 </html>
+
+

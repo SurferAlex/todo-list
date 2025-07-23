@@ -2,41 +2,149 @@
 <html>
 <head>
 	<title>Главная страница</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
 		body {
 			text-align: center;
 			font-family: Arial, sans-serif;
 			background-image: url('/frontend/images/background.jpg');
-			background-size: cover; /* Заставляет изображение занимать весь фон */
-			background-position: top center; /* Центрирует изображение по горизонтали и выравнивает по верхнему краю */
-			background-repeat: no-repeat; /* Отключает повторение изображения */
+			background-size: cover;
+			background-position: top center;
+			background-repeat: no-repeat;
+			margin: 0;
+			padding: 20px;
+			min-height: 100vh;
+			display: flex;
+			align-items: flex-start;
+			justify-content: center;
+			padding-top: 80px;
 		}
-		h1 {
-			font-size: 2.5em;
-			margin-bottom: 20px;
+		
+		.container {
+			background: rgba(255, 255, 255, 0.7);
+			border-radius: 20px;
+			padding: 40px;
+			box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+			backdrop-filter: blur(15px);
+			max-width: 500px;
+			width: 100%;
+			border: 1px solid rgba(255, 255, 255, 0.3);
 		}
+		
+		.logo-container {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 30px;
+		}
+		
+		.logo {
+			width: 60px;
+			height: 60px;
+			margin-right: 15px;
+		}
+		
+		.brand-name {
+			font-size: 3em;
+			font-weight: bold;
+			background: linear-gradient(135deg, #6f42c1, #e83e8c);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+		
 		p {
-			margin: 20px 0; /* Увеличиваем отступ для кнопки регистрации */
+			margin: 20px 0;
 		}
+		
 		a {
 			font-size: 1.5em;
-			padding: 10px 20px;
-			background-color: #6f42c1; /* Фиолетовый цвет */
+			padding: 15px 30px;
+			background: rgba(111, 66, 193, 0.8);
 			color: white;
 			text-decoration: none;
-			border-radius: 5px;
-			border: none;
+			border-radius: 12px;
 			display: inline-block;
-			transition: background-color 0.3s;
+			transition: all 0.3s ease;
+			margin: 10px 0;
+			width: 100%;
+			box-sizing: border-box;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+			backdrop-filter: blur(10px);
 		}
+		
 		a:hover {
-			background-color: #5a32a1; /* Темнее при наведении */
+			transform: translateY(-2px);
+			box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+			background: rgba(111, 66, 193, 0.9);
+		}
+		
+		/* Планшеты */
+		@media (max-width: 768px) {
+			body {
+				padding: 15px;
+				padding-top: 60px;
+			}
+			
+			.container {
+				padding: 30px;
+			}
+			
+			.brand-name {
+				font-size: 2.5em;
+			}
+			
+			.logo {
+				width: 50px;
+				height: 50px;
+			}
+			
+			a {
+				font-size: 1.3em;
+				padding: 12px 25px;
+			}
+		}
+		
+		/* Мобильные */
+		@media (max-width: 480px) {
+			body {
+				padding: 10px;
+				padding-top: 40px;
+			}
+			
+			.container {
+				padding: 25px;
+			}
+			
+			.brand-name {
+				font-size: 2em;
+			}
+			
+			.logo {
+				width: 45px;
+				height: 45px;
+			}
+			
+			a {
+				font-size: 1.2em;
+				padding: 15px 20px;
+				min-height: 44px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
 		}
 	</style>
 </head>
 <body>
-	<h1>Добро пожаловать!</h1>
-	<p><a href="/login">Войти</a></p>
-	<p><a href="/register">Зарегистрироваться</a></p>
+	<div class="container">
+		<div class="logo-container">
+			<img src="/frontend/images/Baza_logo.jpeg" alt="Logo" class="logo">
+			<span class="brand-name">BAZA</span>
+		</div>
+		
+		<p><a href="/login">Войти</a></p>
+		<p><a href="/register">Создать аккаунт</a></p>
+	</div>
 </body>
 </html>

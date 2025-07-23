@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Вход</title>
 	<style>
 		body {
@@ -11,90 +12,243 @@
 			background-size: cover;
 			background-position: top center;
 			background-repeat: no-repeat;
+			margin: 0;
+			padding: 20px;
+			min-height: 100vh;
+			display: flex;
+			align-items: flex-start;
+			justify-content: center;
+			padding-top: 80px;
+		}
+
+		.container {
+			background: rgba(255, 255, 255, 0.7);
+			border-radius: 20px;
+			padding: 40px;
+			box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+			backdrop-filter: blur(15px);
+			max-width: 400px;
+			width: 100%;
+			border: 1px solid rgba(255, 255, 255, 0.3);
+		}
+
+		.logo-container {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 30px;
+		}
+
+		.logo {
+			width: 50px;
+			height: 50px;
+			margin-right: 15px;
+		}
+
+		.brand-name {
+			font-size: 2.5em;
+			font-weight: bold;
+			background: linear-gradient(135deg, #6f42c1, #e83e8c);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
 		}
 
 		h1 {
 			font-size: 2.5em;
-			margin-bottom: 20px;
-			color: white;
-			text-shadow: 0 0 5px #000;
+			margin-bottom: 30px;
+			color: #333;
 		}
 
 		form {
-			margin: 20px auto;
-			padding: 20px;
-			width: 300px;
-			background: rgba(255, 255, 255, 0.9);
-			border-radius: 10px;
-			box-shadow: 0 0 10px rgba(0,0,0,0.3);
+			margin: 20px 0;
 		}
 
 		input[type="text"], input[type="password"] {
-			font-size: 1.2em;
-			padding: 10px;
-			width: 90%;
-			margin: 10px 0;
-			border: 1px solid #ccc;
-			border-radius: 5px;
+			font-size: 16px;
+			padding: 15px;
+			width: 100%;
+			margin: 15px 0;
+			border: 2px solid rgba(224, 224, 224, 0.5);
+			border-radius: 12px;
+			box-sizing: border-box;
+			transition: border-color 0.3s ease;
+			background: rgba(255, 255, 255, 0.8);
+			backdrop-filter: blur(10px);
+		}
+
+		input[type="text"]:focus, input[type="password"]:focus {
+			outline: none;
+			border-color: #007bff;
+			box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+			background: rgba(255, 255, 255, 0.9);
 		}
 
 		button {
-			font-size: 1em;
-			padding: 10px 20px;
+			font-size: 18px;
+			padding: 15px 30px;
 			cursor: pointer;
-			background-color: #4CAF50;
+			background: rgba(40, 167, 69, 0.8);
 			color: white;
 			border: none;
-			border-radius: 5px;
+			border-radius: 12px;
+			transition: all 0.3s ease;
+			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+			width: 100%;
+			margin-top: 10px;
+			backdrop-filter: blur(10px);
+		}
+
+		button:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+			background: rgba(40, 167, 69, 0.9);
 		}
 
 		#error {
-			margin-top: 15px;
-			color: red;
+			margin-top: 20px;
+			color: #dc3545;
 			font-weight: bold;
+			padding: 10px;
+			border-radius: 8px;
+			background: rgba(220, 53, 69, 0.1);
+		}
+
+		.back-link {
+			margin-top: 20px;
+		}
+
+		.back-link a {
+			color: #007bff;
+			text-decoration: none;
+			font-size: 16px;
+		}
+
+		.back-link a:hover {
+			text-decoration: underline;
+		}
+
+		/* Планшеты */
+		@media (max-width: 768px) {
+			body {
+				padding: 15px;
+				padding-top: 60px;
+			}
+
+			.container {
+				padding: 30px;
+			}
+
+			h1 {
+				font-size: 2.2em;
+			}
+
+			.brand-name {
+				font-size: 2.2em;
+			}
+
+			.logo {
+				width: 45px;
+				height: 45px;
+			}
+
+			input[type="text"], input[type="password"] {
+				font-size: 16px;
+				padding: 12px;
+			}
+
+			button {
+				font-size: 16px;
+				padding: 12px 25px;
+			}
+		}
+
+		/* Мобильные */
+		@media (max-width: 480px) {
+			body {
+				padding: 10px;
+				padding-top: 40px;
+			}
+
+			.container {
+				padding: 25px;
+			}
+
+			h1 {
+				font-size: 2em;
+			}
+
+			.brand-name {
+				font-size: 2em;
+			}
+
+			.logo {
+				width: 40px;
+				height: 40px;
+			}
+
+			input[type="text"], input[type="password"] {
+				font-size: 16px;
+				padding: 15px;
+				min-height: 44px;
+			}
+
+			button {
+				font-size: 16px;
+				padding: 15px 25px;
+				min-height: 44px;
+			}
 		}
 	</style>
 </head>
 <body>
-<h1>Вход</h1>
-<form id="login-form">
-	<input type="text" name="username" placeholder="Имя пользователя" required>
-	<input type="password" name="password" placeholder="Пароль" required>
-	<button type="submit">Войти</button>
-</form>
-<div id="error"></div>
+	<div class="container">
+		<div class="logo-container">
+			<img src="/frontend/images/Baza_logo.jpeg" alt="Logo" class="logo">
+			<span class="brand-name">BAZA</span>
+		</div>
 
-<script>
-	document.getElementById('login-form').addEventListener('submit', async function (e) {
-		e.preventDefault(); // отключаем стандартную отправку формы
+		<h1>Вход</h1>
+		<form id="login-form">
+			<input type="text" name="username" placeholder="Имя пользователя" required>
+			<input type="password" name="password" placeholder="Пароль" required>
+			<button type="submit">Войти</button>
+		</form>
+		<div id="error"></div>
+		
+		<div class="back-link">
+			<a href="/home">← Вернуться на главную</a>
+		</div>
+	</div>
 
-		const formData = new FormData(this);
-		const data = {
-			username: formData.get('username'),
-			password: formData.get('password')
-		};
+	<script>
+		document.getElementById('login-form').addEventListener('submit', async function (e) {
+			e.preventDefault();
 
-		const response = await fetch('/login', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(data)
+			const formData = new FormData(this);
+			const data = {
+				username: formData.get('username'),
+				password: formData.get('password')
+			};
+
+			const response = await fetch('/login', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			});
+
+			const errorDiv = document.getElementById('error');
+
+			if (response.ok) {
+				document.cookie = `username=${data.username}; path=/; max-age=86400`;
+				window.location.href = '/profile';
+			} else {
+				const errorText = await response.text();
+				errorDiv.textContent = 'Ошибка: ' + errorText;
+			}
 		});
-
-		const errorDiv = document.getElementById('error');
-
-		if (response.ok) {
-			// Сохраняем имя пользователя в куки на 1 день
-			document.cookie = `username=${data.username}; path=/; max-age=86400`;
-
-			// Перенаправление на /tasks
-			window.location.href = '/tasks';
-		} else {
-			const errorText = await response.text();
-			errorDiv.textContent = 'Ошибка: ' + errorText;
-		}
-	});
-</script>
+	</script>
 </body>
 </html>

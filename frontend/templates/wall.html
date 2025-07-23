@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Стена постов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('/frontend/images/background_tasks.jpg');
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid rgba(224, 224, 224, 0.5);
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin: 0;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+        }
+        
+        .brand-name {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #6f42c1, #e83e8c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-button {
+            font-size: 1.1em;
+            padding: 12px 24px;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .home-btn {
+            background: rgba(0, 123, 255, 0.8);
+        }
+        
+        .tasks-btn {
+            background: rgba(40, 167, 69, 0.8);
+        }
+        
+        .logout-btn {
+            background: rgba(220, 53, 69, 0.8);
+        }
+        
+        .post-form {
+            background: rgba(248, 249, 250, 0.6);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .post-form textarea {
+            width: 100%;
+            height: 120px;
+            padding: 15px;
+            border: 2px solid rgba(224, 224, 224, 0.5);
+            border-radius: 12px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .post-form textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .post-form input[type="file"] {
+            margin: 15px 0;
+            padding: 10px;
+            border: 2px dashed rgba(0, 123, 255, 0.5);
+            border-radius: 8px;
+            background: rgba(0, 123, 255, 0.05);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .post-form button {
+            background: rgba(0, 123, 255, 0.8);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .post-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        .post {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(224, 224, 224, 0.5);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .post:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .post-author {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .post-date {
+            color: #888;
+        }
+        
+        .post-content {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .delete-btn {
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .delete-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .post-actions {
+            margin-top: 15px;
+            text-align: right;
+        }
+        
+        /* Стили для изображений */
+        .post-images {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .post-image {
+            max-width: 400px;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .post-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+        
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: #f1f1f1;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close:hover {
+            color: #bbb;
+        }
+        
+        /* Планшеты */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 25px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .brand-name {
+                font-size: 2.2em;
+            }
+            
+            .logo {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .nav-button {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .post-form textarea {
+                height: 100px;
+            }
+            
+            .post-image {
+                max-width: 100%;
+                max-height: 300px;
+            }
+        }
+        
+        /* Мобильные */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .brand-name {
+                font-size: 2em;
+            }
+            
+            .logo {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .nav-button {
+                padding: 15px 20px;
+                font-size: 16px;
+                min-height: 44px;
+            }
+            
+            .post {
+                padding: 15px;
+            }
+            
+            .post-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .post-images {
+                gap: 8px;
+            }
+            
+            .post-image {
+                max-width: 100%;
+                max-height: 250px;
+            }
+            
+            .modal-content {
+                max-width: 95%;
+                max-height: 80%;
+            }
+            
+            .close {
+                top: 15px;
+                right: 25px;
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <img src="/frontend/images/Baza_logo.jpeg" alt="Logo" class="logo">
+            <span class="brand-name">BAZA</span>
+        </div>
+        
+        <div class="header">
+            <h1>Стена постов</h1>
+        </div>
+        
+        <div class="navigation">
+            <a href="/home" class="nav-button home-btn">Главная</a>
+            <a href="/tasks" class="nav-button tasks-btn">Задачи</a>
+            <a href="/logout" class="nav-button logout-btn">Выйти</a>
+        </div>
+        
+        <div class="post-form">
+            <form method="POST" action="/wall" enctype="multipart/form-data">
+                <textarea name="content" placeholder="Что у вас нового?" required></textarea>
+                <input type="file" name="images" multiple accept="image/*">
+                <button type="submit">Опубликовать</button>
+            </form>
+        </div>
+        
+        <div class="posts">
+            {{range .}}
+            <div class="post">
+                <div class="post-header">
+                    <span class="post-author">{{.Username}}</span>
+                    <span class="post-date">{{.CreatedAt.Format "02.01.2006 15:04"}}</span>
+                </div>
+                <div class="post-content">
+                    {{.Content}}
+                    {{if .Images}}
+                    <div class="post-images">
+                        {{range .Images}}
+                        <img src="/frontend/uploads/{{.Filename}}" alt="{{.OriginalName}}" class="post-image" onclick="openModal(this.src)">
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+                <div class="post-actions">
+                    <form method="POST" action="/delete_post" style="display: inline;">
+                        <input type="hidden" name="postId" value="{{.ID}}">
+                        <button type="submit" class="delete-btn" onclick="return confirm('Удалить пост?')">Удалить</button>
+                    </form>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+    
+    <!-- Модальное окно -->
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+    
+    <script>
+        function openModal(src) {
+            document.getElementById('imageModal').style.display = "block";
+            document.getElementById('modalImage').src = src;
+        }
+        
+        function closeModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
+        
+        // Закрытие модального окна при клике вне изображения
+        window.onclick = function(event) {
+            var modal = document.getElementById('imageModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

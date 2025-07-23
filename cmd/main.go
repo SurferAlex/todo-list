@@ -11,9 +11,9 @@ func main() {
 	// Инициализация подключения к базе данных
 	db.InitDB(
 		`user=postgres password=qwe1144EodT5
-		dbname=auth_db
+		dbname=test_blog
 		host=localhost
-		port=5432
+		port=5433
 		sslmode=disable`,
 	)
 

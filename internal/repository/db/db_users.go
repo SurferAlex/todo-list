@@ -19,6 +19,13 @@ func GetUserByUsername(username string) (*entity.User, error) {
 	return &user, nil // Возвращаем найденного пользователя
 }
 
+// Получение userID по username
+func GetUserIDByUsername(username string) (int, error) {
+	var userID int
+	err := db.QueryRow("SELECT id FROM users WHERE username = $1", username).Scan(&userID)
+	return userID, err
+}
+
 func InsertUser(user entity.User) error {
 	query := `INSERT INTO users (username, password) VALUES ($1, $2)`
 	_, err := db.Exec(query, user.Username, user.Password)
