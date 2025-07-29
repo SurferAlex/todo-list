@@ -280,59 +280,59 @@
 </head>
 <body>
 	<div class="container">
-		<h1>Список задач</h1>
-		<h2 id="greeting"></h2>
+<h1>Список задач</h1>
+<h2 id="greeting"></h2>
 
 		<div class="navigation">
 			<a href="/profile" class="nav-button profile-btn">Профиль</a>
 			<a href="/wall" class="nav-button wall-btn">Стена</a>
 			<a href="/logout" class="nav-button logout-btn">Выйти</a>
-			<form method="post" action="/delete_account" style="display:inline;">
+	<form method="post" action="/delete_account" style="display:inline;">
 				<button type="submit" class="nav-button delete-btn">Удалить аккаунт</button>
-			</form>
-		</div>
+	</form>
+</div>
 
-		<ul>
-			{{range $task := .}}
-			<li>
-				<label class="{{if $task.Complete}}completed{{end}}">{{$task.Title}}</label>
-				<form method="post" action="/tasks" style="display:inline;">
-					<input type="hidden" name="toggleId" value="{{$task.ID}}">
+<ul>
+	{{range $task := .}}
+	<li>
+		<label class="{{if $task.Complete}}completed{{end}}">{{$task.Title}}</label>
+		<form method="post" action="/tasks" style="display:inline;">
+			<input type="hidden" name="toggleId" value="{{$task.ID}}">
 					<button type="submit" class="{{if $task.Complete}}completed-button{{else}}task-button{{end}}">
-						{{if $task.Complete}}Выполнена{{else}}Невыполнена{{end}}
-					</button>
-				</form>
-				<form method="post" action="/tasks" style="display:inline;">
-					<input type="hidden" name="deleteId" value="{{$task.ID}}">
+				{{if $task.Complete}}Выполнена{{else}}Невыполнена{{end}}
+			</button>
+		</form>
+		<form method="post" action="/tasks" style="display:inline;">
+			<input type="hidden" name="deleteId" value="{{$task.ID}}">
 					<button type="submit" class="delete-task-btn">Удалить</button>
-				</form>
-			</li>
-			{{end}}
-		</ul>
+		</form>
+	</li>
+	{{end}}
+</ul>
 
 		<div class="add-form">
 			<form method="post" action="/tasks">
-				<input type="text" name="title" placeholder="Введите название задачи" required>
+	<input type="text" name="title" placeholder="Введите название задачи" required>
 				<button type="submit" class="add-button">Добавить задачу</button>
-			</form>
+</form>
 		</div>
 	</div>
 
-	<script>
-		function getCookie(name) {
-			const value = "; " + document.cookie;
-			const parts = value.split("; " + name + "=");
-			if (parts.length === 2) return parts.pop().split(";").shift();
-		}
+<script>
+	function getCookie(name) {
+		const value = "; " + document.cookie;
+		const parts = value.split("; " + name + "=");
+		if (parts.length === 2) return parts.pop().split(";").shift();
+	}
 
-		const username = getCookie("username");
+	const username = getCookie("username");
 
-		if (username) {
-			document.getElementById("greeting").textContent = `Привет, ${username}!`;
-		} else {
-			window.location.href = "/login";
-		}
-	</script>
+	if (username) {
+		document.getElementById("greeting").textContent = `Привет, ${username}!`;
+	} else {
+		window.location.href = "/login";
+	}
+</script>
 </body>
 </html>
 

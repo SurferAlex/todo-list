@@ -1,2 +1,33 @@
+# Бинарные файлы
+myapp
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Логи
+*.log
+
+# Временные файлы
+*.tmp
+*.temp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Данные
 tasks.json
 users.json
+
+# Загрузки
+frontend/uploads/
