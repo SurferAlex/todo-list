@@ -208,47 +208,47 @@
 			<span class="brand-name">BAZA</span>
 		</div>
 
-		<h1>Вход</h1>
-		<form id="login-form">
-			<input type="text" name="username" placeholder="Имя пользователя" required>
-			<input type="password" name="password" placeholder="Пароль" required>
-			<button type="submit">Войти</button>
-		</form>
-		<div id="error"></div>
+<h1>Вход</h1>
+<form id="login-form">
+	<input type="text" name="username" placeholder="Имя пользователя" required>
+	<input type="password" name="password" placeholder="Пароль" required>
+	<button type="submit">Войти</button>
+</form>
+<div id="error"></div>
 		
 		<div class="back-link">
 			<a href="/home">← Вернуться на главную</a>
 		</div>
 	</div>
 
-	<script>
-		document.getElementById('login-form').addEventListener('submit', async function (e) {
+<script>
+	document.getElementById('login-form').addEventListener('submit', async function (e) {
 			e.preventDefault();
 
-			const formData = new FormData(this);
-			const data = {
-				username: formData.get('username'),
-				password: formData.get('password')
-			};
+		const formData = new FormData(this);
+		const data = {
+			username: formData.get('username'),
+			password: formData.get('password')
+		};
 
-			const response = await fetch('/login', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(data)
-			});
-
-			const errorDiv = document.getElementById('error');
-
-			if (response.ok) {
-				document.cookie = `username=${data.username}; path=/; max-age=86400`;
-				window.location.href = '/profile';
-			} else {
-				const errorText = await response.text();
-				errorDiv.textContent = 'Ошибка: ' + errorText;
-			}
+		const response = await fetch('/login', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(data)
 		});
-	</script>
+
+		const errorDiv = document.getElementById('error');
+
+		if (response.ok) {
+			document.cookie = `username=${data.username}; path=/; max-age=86400`;
+			window.location.href = '/profile';
+		} else {
+			const errorText = await response.text();
+			errorDiv.textContent = 'Ошибка: ' + errorText;
+		}
+	});
+</script>
 </body>
 </html>

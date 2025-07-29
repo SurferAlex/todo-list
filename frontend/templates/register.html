@@ -208,48 +208,48 @@
             <span class="brand-name">BAZA</span>
         </div>
 
-        <h1>Регистрация</h1>
-        <form id="register-form">
-            <input type="text" name="username" placeholder="Логин" required>
-            <input type="password" name="password" placeholder="Пароль" required>
+<h1>Регистрация</h1>
+<form id="register-form">
+    <input type="text" name="username" placeholder="Логин" required>
+    <input type="password" name="password" placeholder="Пароль" required>
             <button type="submit">Создать аккаунт</button>
-        </form>
-        <div id="message"></div>
+</form>
+<div id="message"></div>
         
         <div class="back-link">
             <a href="/home">← Вернуться на главную</a>
         </div>
     </div>
 
-    <script>
-        document.getElementById('register-form').addEventListener('submit', async function(e) {
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const formData = new FormData(this);
-            const data = {
-                username: formData.get('username'),
-                password: formData.get('password')
-            };
+        const formData = new FormData(this);
+        const data = {
+            username: formData.get('username'),
+            password: formData.get('password')
+        };
 
-            const response = await fetch('/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            const messageElement = document.getElementById('message');
-
-            if (response.ok) {
-                document.cookie = `username=${data.username}; path=/; max-age=86400`;
-                window.location.href = '/profile';
-            } else {
-                const errorText = await response.text();
-                messageElement.style.color = '#dc3545';
-                messageElement.textContent = 'Ошибка: ' + errorText;
-            }
+        const response = await fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         });
-    </script>
+
+        const messageElement = document.getElementById('message');
+
+        if (response.ok) {
+            document.cookie = `username=${data.username}; path=/; max-age=86400`;
+            window.location.href = '/profile';
+        } else {
+            const errorText = await response.text();
+                messageElement.style.color = '#dc3545';
+            messageElement.textContent = 'Ошибка: ' + errorText;
+        }
+    });
+</script>
 </body>
 </html>

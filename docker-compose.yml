@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: test_blog
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qwe1144EodT5
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=test_blog
+      - DB_USER=postgres
+      - DB_PASSWORD=qwe1144EodT5
+      - PGPASSWORD=qwe1144EodT5  # Для скрипта ожидания
+
+volumes:
+  postgres_data:
