@@ -102,3 +102,17 @@ func GetLastPostID(userID int) (int, error) {
 	err := db.QueryRow("SELECT id FROM posts WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1", userID).Scan(&postID)
 	return postID, err
 }
+
+func CreatePostsImagesTable() error {
+	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS post_images (
+			id SERIAL PRIMARY KEY,
+			post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+			filename VARCHAR(255) NOT NULL,
+			original_name VARCHAR(255) NOT NULL,
+			file_path TEXT NOT NULL,
+			created_at TIMESTAMP DEFAULT NOW()
+		)
+	`)
+	return err
+}

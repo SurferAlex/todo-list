@@ -43,3 +43,15 @@ func DeleteTaskByID(username string, id int) error {
 	_, err := db.Exec(query, id, username)
 	return err
 }
+
+func CreateTasksTable() error {
+	_, err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS tasks (
+			id SERIAL PRIMARY KEY,
+			username VARCHAR(255) NOT NULL,
+			title TEXT NOT NULL,
+			is_completed BOOLEAN DEFAULT FALSE
+		)
+	`)
+	return err
+}

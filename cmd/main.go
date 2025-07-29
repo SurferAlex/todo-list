@@ -21,8 +21,16 @@ func main() {
 		dbUser, dbPassword, dbName, dbHost, dbPort,
 	)
 
+	// Подключение к БД
 	db.InitDB(connectionString)
 
+	// Создание таблиц в БД
+	db.CreateUsersTable()
+	db.CreateTasksTable()
+	db.CreatePostsTable()
+	db.CreatePostsImagesTable()
+
+	// Запуск сервера
 	server := cmd.NewServer()
 	server.Start()
 
