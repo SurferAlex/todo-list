@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"testi/internal/entity"
+	"testi/internal/middleware"
 	"testi/internal/repository/db"
 	"testi/internal/usecases/auth"
 	"time"
@@ -47,7 +48,45 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.StripPrefix("/frontend/", http.FileServer(http.Dir("frontend"))).ServeHTTP(w, req)
 		return
 	}
-	// Ваши маршруты
+
+	// Маршруты с опциональной авторизацией (проверяют сессию, но не требуют её)
+	optionalAuthRoutes := []string{"/home"}
+	for _, route := range optionalAuthRoutes {
+		if req.URL.Path == route {
+			middleware.OptionalAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if handler, ok := routes[routeKey{Method: r.Method, Path: r.URL.Path}]; ok {
+					handler(w, r)
+				} else {
+					http.NotFound(w, r)
+				}
+			})).ServeHTTP(w, req)
+			return
+		}
+	}
+
+	// Защищенные маршруты (требуют авторизации)
+	protectedRoutes := []string{"/tasks", "/wall", "/profile", "/delete_post"}
+	isProtected := false
+	for _, route := range protectedRoutes {
+		if req.URL.Path == route {
+			isProtected = true
+			break
+		}
+	}
+
+	// Применяем middleware для защищенных маршрутов
+	if isProtected {
+		middleware.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if handler, ok := routes[routeKey{Method: r.Method, Path: r.URL.Path}]; ok {
+				handler(w, r)
+			} else {
+				http.NotFound(w, r)
+			}
+		})).ServeHTTP(w, req)
+		return
+	}
+
+	// Обычные маршруты
 	if handler, ok := routes[routeKey{Method: req.Method, Path: req.URL.Path}]; ok {
 		handler(w, req)
 	} else {
@@ -73,22 +112,41 @@ func SetupRouters() {
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
+	// Проверяем, есть ли активная сессия
+	user := middleware.GetUserFromContext(r)
+	if user != nil {
+		// Если пользователь авторизован, перенаправляем в профиль
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+		return
+	}
+
+	// Если пользователь не авторизован, перенаправляем на главную
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
+	// Проверяем, есть ли активная сессия
+	user := middleware.GetUserFromContext(r)
+	if user != nil {
+		// Если пользователь авторизован, перенаправляем в профиль
+		http.Redirect(w, r, "/profile", http.StatusSeeOther)
+		return
+	}
+
+	// Если пользователь не авторизован, показываем главную страницу
 	tmpl := template.Must(template.ParseFiles("frontend/templates/home.html"))
 	tmpl.Execute(w, nil)
 }
 
 func handleGetTasks(w http.ResponseWriter, r *http.Request) {
-	username, err := getUsernameFromCookie(r)
-	if err != nil {
+	// Используем middleware для проверки сессии
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
-	tasksList, err := db.GetTasksByUser(username)
+	tasksList, err := db.GetTasksByUser(user.Username)
 	if err != nil {
 		http.Error(w, "Ошибка загрузки задач", http.StatusInternalServerError)
 		return
@@ -99,13 +157,13 @@ func handleGetTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePostTasks(w http.ResponseWriter, r *http.Request) {
-	username, err := getUsernameFromCookie(r)
-	if err != nil {
+	// Используем middleware для проверки сессии
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
-	user := entity.User{Username: username}
 	r.ParseForm()
 
 	switch {
@@ -118,24 +176,16 @@ func handlePostTasks(w http.ResponseWriter, r *http.Request) {
 	case r.FormValue("toggleId") != "":
 		id, err := strconv.Atoi(r.FormValue("toggleId"))
 		if err == nil {
-			db.ToggleCompleteByID(username, id)
+			db.ToggleCompleteByID(user.Username, id)
 		}
 	case r.FormValue("deleteId") != "":
 		id, err := strconv.Atoi(r.FormValue("deleteId"))
 		if err == nil {
-			db.DeleteTaskByID(username, id)
+			db.DeleteTaskByID(user.Username, id)
 		}
 	}
 
 	http.Redirect(w, r, "/tasks", http.StatusSeeOther)
-}
-
-func getUsernameFromCookie(r *http.Request) (string, error) {
-	cookie, err := r.Cookie("username")
-	if err != nil || cookie.Value == "" {
-		return "", fmt.Errorf("cookie not found")
-	}
-	return cookie.Value, nil
 }
 
 func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
@@ -190,21 +240,17 @@ func handleGetWall(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleAddPosts(w http.ResponseWriter, r *http.Request) {
-	username, err := getUsernameFromCookie(r)
-	if err != nil {
+	// Используем middleware для проверки сессии
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
-	userID, err := db.GetUserIDByUsername(username)
-	if err != nil {
-		fmt.Printf("Ошибка получения userID: %v\n", err)
-		http.Error(w, "User not found", http.StatusBadRequest)
-		return
-	}
+	userID := user.UserID
 
 	// Парсим multipart форму
-	err = r.ParseMultipartForm(32 << 20)
+	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		fmt.Printf("Ошибка парсинга формы: %v\n", err)
 		http.Error(w, "Ошибка парсинга формы", http.StatusBadRequest)
@@ -280,28 +326,26 @@ func handleAddPosts(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleProfile(w http.ResponseWriter, r *http.Request) {
-	username, err := getUsernameFromCookie(r)
-	if err != nil {
+	// Используем middleware для проверки сессии
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
 	tmpl := template.Must(template.ParseFiles("frontend/templates/profile.html"))
-	tmpl.Execute(w, username)
+	tmpl.Execute(w, user.Username)
 }
 
 func handleDeletePost(w http.ResponseWriter, r *http.Request) {
-	username, err := getUsernameFromCookie(r)
-	if err != nil {
+	// Используем middleware для проверки сессии
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
-	userID, err := db.GetUserIDByUsername(username)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusBadRequest)
-		return
-	}
+	userID := user.UserID
 
 	postID, err := strconv.Atoi(r.FormValue("postId"))
 	if err != nil {

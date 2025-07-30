@@ -84,6 +84,40 @@
             background: rgba(255, 255, 255, 0.9);
         }
 
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 40%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            padding: 0;
+            transition: color 0.3s ease;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .password-toggle:hover {
+            color: #333;
+            transform: translateY(-50%);
+        }
+
+        .password-toggle:focus {
+            outline: none;
+        }
+
         button {
             font-size: 18px;
             padding: 15px 30px;
@@ -211,8 +245,13 @@
 <h1>Регистрация</h1>
 <form id="register-form">
     <input type="text" name="username" placeholder="Логин" required>
-    <input type="password" name="password" placeholder="Пароль" required>
-            <button type="submit">Создать аккаунт</button>
+    <div class="password-container">
+        <input type="password" name="password" placeholder="Пароль" required>
+        <button type="button" class="password-toggle" aria-label="Показать пароль">
+            👁️
+        </button>
+    </div>
+    <button type="submit">Создать аккаунт</button>
 </form>
 <div id="message"></div>
         
@@ -222,6 +261,28 @@
     </div>
 
 <script>
+    // Функция переключения видимости пароля
+    function togglePasswordVisibility() {
+        const passwordInput = document.querySelector('input[name="password"]');
+        const toggleButton = document.querySelector('.password-toggle');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleButton.textContent = '🙈';
+            toggleButton.setAttribute('aria-label', 'Скрыть пароль');
+        } else {
+            passwordInput.type = 'password';
+            toggleButton.textContent = '👁️';
+            toggleButton.setAttribute('aria-label', 'Показать пароль');
+        }
+    }
+
+    // Добавляем обработчик для кнопки переключения
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.querySelector('.password-toggle');
+        toggleButton.addEventListener('click', togglePasswordVisibility);
+    });
+
     document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 

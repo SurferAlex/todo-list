@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"testi/internal/entity"
@@ -44,6 +45,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CheckPassword(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("=== Начало CheckPassword ===")
+
 	var creds struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -51,30 +54,42 @@ func CheckPassword(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
+		fmt.Printf("Ошибка декодирования: %v\n", err)
 		http.Error(w, "Некорректный формат запроса", http.StatusBadRequest)
 		return
 	}
 
+	fmt.Printf("Попытка входа для пользователя: %s\n", creds.Username)
+
 	// Проверка логина и пароля
 	user, err := db.GetUserByUsername(creds.Username)
 	if err != nil || user == nil || user.Password != creds.Password {
+		fmt.Printf("Неверные данные для пользователя: %s\n", creds.Username)
 		http.Error(w, "Неверные данные", http.StatusUnauthorized)
 		return
 	}
 
+	fmt.Printf("Пользователь найден: %s\n", creds.Username)
+
 	// Получить userID
 	userID, err := db.GetUserIDByUsername(creds.Username)
 	if err != nil {
+		fmt.Printf("Ошибка получения userID: %v\n", err)
 		http.Error(w, "Ошибка получения данных пользователя", http.StatusInternalServerError)
 		return
 	}
 
+	fmt.Printf("UserID получен: %d\n", userID)
+
 	// Создать сессию
 	sessionID, err := session.CreateSession(userID, creds.Username)
 	if err != nil {
+		fmt.Printf("Ошибка создания сессии: %v\n", err)
 		http.Error(w, "Ошибка создания сессии", http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Printf("Сессия создана: %s\n", sessionID)
 
 	// Установить cookie с сессией
 	http.SetCookie(w, &http.Cookie{
@@ -87,6 +102,7 @@ func CheckPassword(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 	})
 
+	fmt.Println("=== Успешный вход ===")
 	// Успешный вход
 	w.WriteHeader(http.StatusOK)
 }

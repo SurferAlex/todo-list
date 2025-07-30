@@ -36,6 +36,32 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// OptionalAuthMiddleware - проверяет сессию, но не требует авторизации
+func OptionalAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Получить session_id из cookie
+		cookie, err := r.Cookie("session_id")
+		if err != nil {
+			// Если нет cookie, просто продолжаем без пользователя
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Проверить сессию в Redis
+		sessionData, err := session.GetSession(cookie.Value)
+		if err != nil {
+			// Если сессия невалидна, просто продолжаем без пользователя
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// Добавить данные пользователя в контекст запроса
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, "user", sessionData)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 // Функция для получения пользователя из контекста
 func GetUserFromContext(r *http.Request) *session.Session {
 	user := r.Context().Value("user")
