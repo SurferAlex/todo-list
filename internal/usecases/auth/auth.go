@@ -5,8 +5,8 @@ import (
 	"html/template"
 	"net/http"
 	"testi/internal/entity"
-	"testi/internal/repository/db" //
-	"time"
+	"testi/internal/repository/db"
+	"testi/internal/session"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -56,11 +56,36 @@ func CheckPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Проверка логина и пароля
-	user, err := db.GetUserByUsername(creds.Username) // Получаем пользователя из базы данных
+	user, err := db.GetUserByUsername(creds.Username)
 	if err != nil || user == nil || user.Password != creds.Password {
 		http.Error(w, "Неверные данные", http.StatusUnauthorized)
 		return
 	}
+
+	// Получить userID
+	userID, err := db.GetUserIDByUsername(creds.Username)
+	if err != nil {
+		http.Error(w, "Ошибка получения данных пользователя", http.StatusInternalServerError)
+		return
+	}
+
+	// Создать сессию
+	sessionID, err := session.CreateSession(userID, creds.Username)
+	if err != nil {
+		http.Error(w, "Ошибка создания сессии", http.StatusInternalServerError)
+		return
+	}
+
+	// Установить cookie с сессией
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		Path:     "/",
+		HttpOnly: true,
+		MaxAge:   60 * 60 * 24 * 7, // 7 дней
+		Secure:   false,            // для HTTP
+		SameSite: http.SameSiteLaxMode,
+	})
 
 	// Успешный вход
 	w.WriteHeader(http.StatusOK)
@@ -73,17 +98,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	// Удаление куки username
+	// Получить session_id из cookie
+	cookie, err := r.Cookie("session_id")
+	if err == nil && cookie.Value != "" {
+		// Удалить сессию из Redis
+		session.DeleteSession(cookie.Value)
+	}
+
+	// Удалить cookie
 	http.SetCookie(w, &http.Cookie{
-		Name:    "username",
-		Value:   "",
-		Path:    "/",
-		MaxAge:  -1,
-		Expires: time.Unix(0, 0),
+		Name:     "session_id",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
 	})
 
-	// Перенаправление на логин или главную
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// Перенаправление на логин
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
 func DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {

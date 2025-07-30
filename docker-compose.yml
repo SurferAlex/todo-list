@@ -11,6 +11,7 @@ services:
 
   postgres:
     image: postgres:15-alpine
+    container_name: todo-postgres
     environment:
       POSTGRES_DB: test_blog
       POSTGRES_USER: postgres
@@ -24,6 +25,7 @@ services:
 
   app:
     build: .
+    container_name: todo-app
     ports:
       - "8080:8080"
     depends_on:
@@ -37,6 +39,8 @@ services:
       - DB_PASSWORD=qwe1144EodT5
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+    networks:
+      - todo_network
 
 volumes:
   postgres_data:
