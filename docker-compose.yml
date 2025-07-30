@@ -1,6 +1,14 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: todo_redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - todo_network
+
   postgres:
     image: postgres:15-alpine
     environment:
@@ -11,6 +19,8 @@ services:
       - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - todo_network
 
   app:
     build: .
@@ -18,13 +28,20 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+      - redis
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=test_blog
       - DB_USER=postgres
       - DB_PASSWORD=qwe1144EodT5
-      - PGPASSWORD=qwe1144EodT5  # Для скрипта ожидания
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
 volumes:
   postgres_data:
+  redis_data:
+
+networks:
+  todo_network:
+    driver: bridge

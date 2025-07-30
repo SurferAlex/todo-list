@@ -5,6 +5,7 @@ import (
 	"os"
 	"testi/internal/cmd"
 	"testi/internal/repository/db"
+	"testi/internal/session"
 	"time"
 )
 
@@ -29,6 +30,9 @@ func main() {
 	db.CreateTasksTable()
 	db.CreatePostsTable()
 	db.CreatePostsImagesTable()
+
+	// Инициализация Redis
+	session.InitRedis()
 
 	// Запуск сервера
 	server := cmd.NewServer()
