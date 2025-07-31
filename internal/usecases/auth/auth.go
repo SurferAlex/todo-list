@@ -8,13 +8,15 @@ import (
 	"testi/internal/entity"
 	"testi/internal/repository/db"
 	"testi/internal/session"
+
+	"github.com/go-playground/validator/v10"
+	"golang.org/x/crypto/bcrypt"
 )
 
+var validate = validator.New()
+
 func Register(w http.ResponseWriter, r *http.Request) {
-	var creds struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
+	var creds entity.RegistrationRequest
 
 	err := json.NewDecoder(r.Body).Decode(&creds)
 	if err != nil {
@@ -22,15 +24,54 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Валидация с помощью библиотеки
+	if err := validate.Struct(creds); err != nil {
+		// Преобразуем ошибки валидации в понятные сообщения
+		validationErrors := err.(validator.ValidationErrors)
+		var errorMsg string
+		for _, e := range validationErrors {
+			switch e.Tag() {
+			case "required":
+				errorMsg = "Все поля обязательны для заполнения"
+			case "min":
+				if e.Field() == "Username" {
+					errorMsg = "Имя пользователя должно содержать минимум 3 символа"
+				} else {
+					errorMsg = "Пароль должен содержать минимум 8 символов"
+				}
+			case "max":
+				if e.Field() == "Username" {
+					errorMsg = "Имя пользователя не может быть длиннее 20 символов"
+				} else {
+					errorMsg = "Пароль не может быть длиннее 100 символов"
+				}
+			case "alphanum":
+				errorMsg = "Имя пользователя может содержать только буквы и цифры"
+			case "containsany":
+				errorMsg = "Пароль должен содержать буквы и цифры"
+			}
+			break
+		}
+		http.Error(w, errorMsg, http.StatusBadRequest)
+		return
+	}
+
 	// Проверка на существование пользователя
-	existingUser, err := db.GetUserByUsername(creds.Username) // Функция для получения пользователя по имени
+	existingUser, err := db.GetUserByUsername(creds.Username)
 	if err == nil && existingUser != nil {
 		http.Error(w, "Пользователь уже существует", http.StatusConflict)
 		return
 	}
 
+	// Хеширование пароля
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(creds.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "Ошибка при обработке пароля", http.StatusInternalServerError)
+		return
+	}
+
 	// Добавление нового пользователя в базу данных
-	newUser := entity.User{Username: creds.Username, Password: creds.Password}
+	newUser := entity.User{Username: creds.Username, Password: string(hashedPassword)}
 	if err := db.InsertUser(newUser); err != nil {
 		http.Error(w, "Ошибка при сохранении пользователя", http.StatusInternalServerError)
 		return
@@ -63,8 +104,16 @@ func CheckPassword(w http.ResponseWriter, r *http.Request) {
 
 	// Проверка логина и пароля
 	user, err := db.GetUserByUsername(creds.Username)
-	if err != nil || user == nil || user.Password != creds.Password {
-		fmt.Printf("Неверные данные для пользователя: %s\n", creds.Username)
+	if err != nil || user == nil {
+		fmt.Printf("Пользователь не найден: %s\n", creds.Username)
+		http.Error(w, "Неверные данные", http.StatusUnauthorized)
+		return
+	}
+
+	// Проверяем хеш пароля
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password))
+	if err != nil {
+		fmt.Printf("Неверный пароль для пользователя: %s\n", creds.Username)
 		http.Error(w, "Неверные данные", http.StatusUnauthorized)
 		return
 	}

@@ -105,7 +105,7 @@ func SetupRouters() {
 	Handle("POST", "/delete_account", auth.DeleteAccountHandler)
 	Handle("GET", "/tasks", handleGetTasks)
 	Handle("POST", "/tasks", handlePostTasks)
-	Handle("GET", "/wall", handleGetWall)
+	Handle("GET", "/wall", handleGetWallOptimized)
 	Handle("POST", "/wall", handleAddPosts)
 	Handle("POST", "/delete_post", handleDeletePost)
 	Handle("GET", "/profile", handleProfile) // добавляем новый маршрут
@@ -227,16 +227,29 @@ func CreateTaskHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func handleGetWall(w http.ResponseWriter, r *http.Request) {
-	posts, err := db.GetAllPosts()
-	if err != nil {
-		fmt.Printf("Ошибка загрузки постов: %v\n", err) // добавь для отладки
-		http.Error(w, "Ошибка загрузки постов", http.StatusInternalServerError)
-		return
-	}
+func handleGetWallOptimized(w http.ResponseWriter, r *http.Request) {
+	postChan := make(chan []entity.Post, 1)
+	errChan := make(chan error, 1)
 
-	tmpl := template.Must(template.ParseFiles("frontend/templates/wall.html"))
-	tmpl.Execute(w, posts)
+	go func() {
+		posts, err := db.GetAllPosts()
+		if err != nil {
+			errChan <- err
+			return
+		}
+		postChan <- posts
+	}()
+
+	select {
+	case posts := <-postChan:
+		tmpl := template.Must(template.ParseFiles("frontend/templates/wall.html"))
+		tmpl.Execute(w, posts)
+	case err := <-errChan:
+		fmt.Printf("Ошибка загрузки постов: %v\n", err)
+		http.Error(w, "Ошибка загрузки постов", http.StatusInternalServerError)
+	case <-time.After(5 * time.Second):
+		http.Error(w, "Таймаут", http.StatusRequestTimeout)
+	}
 }
 
 func handleAddPosts(w http.ResponseWriter, r *http.Request) {
